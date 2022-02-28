@@ -1,0 +1,12 @@
+Debug/*
+*.ncb
+*/Debug/*
+*.user
+doc/*
+*.exe
+*.dat
+*.suo
+*/Release/*
+Release/*
+*.zip
+*.bak

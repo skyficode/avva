@@ -1,0 +1,96 @@
+This file contains information regarding test-pc setup for generating and testing the 
+Avcom API's.
+
+
+BACKGROUND
+Testing is done on Ubuntu 10.04 LTS "Lusty Lynx" i386 server Virtual Machine in VMWare.  
+For network connections, the Virtual Machine is connected with a bridged network interface.
+
+The files in this folder that you will need to copy over to the working directory to automate 
+building to and execution are:
+	Makefile
+	run
+
+
+INSTALL FTD2XX USB DRIVERS
+Follow the instructions in the README.dat file of the libftd2xx1.0.0.tar.gz file (or more 
+recent version) which can be found on the ftdi website 
+(http://www.ftdichip.com/Drivers/D2XX.htm)
+
+My installation varied slightly. /proc/bus/usb does not exist in my version, as it appears 
+to have been depreciated. Thus the /etc/fstab edit that FTDI mentions is unnecessary, and 
+/proc/bus/usb does not need to be mounted. Instead, however, I had to provide appropriate 
+permissions to udev to allow write access to libusb.
+
+Below are the steps I've taken to install the ftd2xx drivers
+(Copied from FTDI's README.dat and edited to reflect my setup):
+
+1. unzip and untar the file given to a suitable directory
+tar -zxvf libftd2xx1.0.0.tar.gz
+
+2. Change directory to the required architecture subdirectory, build/i386 for 32-bit or 
+build/x86_64 for 64-bit.
+
+3. As root user copy the following files to /usr/local/lib
+cp libftd2xx.so.1.0.0 /usr/local/lib
+
+3. Change directory to /usr/local/lib
+cd /usr/local/lib
+
+4. make symbolic links to these files using the following commands:
+ln -s libftd2xx.so.1.0.0 libftd2xx.so
+
+5. Change directory to /usr/lib
+cd /usr/lib
+
+6. make symbolic links to these files using the following commands:
+ln -s /usr/local/lib/libftd2xx.so.1.0.0 libftd2xx.so
+
+7. as root, create a file "/etc/udev/rules.d/41-ftdi-permissions.rules" and enter 
+the following:
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="0666", GROUP="plugdev"
+
+8. Either kill and restart udev, or reboot the system for the permissions to take 
+affect. The user running the application that accesses the Avcom API's must be member 
+of group plugdev in this example.
+
+
+ACCESSING THE WINDOWS DEVELOPMENT PLATFORM
+The primary portion of the API development is done within Windows. To compile/build 
+the project under linux, the linux PC must first copy the files over from the Window's 
+PC. I am doing this via a mounted share folder. The share folder I am using requires 
+credentials to access as permissions are required to access the folder.
+
+1. create a directory to mount to:
+sudo mkdir /mnt/api
+
+2. Open and add the following to /etc/fstab, adjusting parameters as necessary:
+//192.168.2.30/aov-api	/mnt/api	smbfs	credentials=/etc/cifspw,uid=msevero,gid=users,nounix,noserverino,noauto	0	0
+
+3. Create and add the following to /etc/cifspw, adjusting for the right credentials
+username=USERNAME
+password=PASSWORD
+
+4. Secure the file so no one else can read it, other than root by running:
+sudo chown root:root /etc/cifspw
+sudo chmod u=rw,g=,o= /etc/cifspw
+
+
+CREATING/COMPILING THE API AND SUPPORTING PROGRAMS
+The Makefile included will copy and compile all projects and is used for development.
+
+Some of the features currently in the make file is to copy one-or-all projects,
+compile one-or-all projects, and, of course, clean.
+
+Please look at the Makefile's path constants and adjust if needed.
+
+
+RUNNING PROGRAMS
+As of right now, I am not installing the AVCOM API to a standard folder. Instead it 
+will reside in the root folder of the test directory. As of such, the 
+`LD_LIBRARY_PATH="."' command needs to be passed when running any application using 
+the Avcom shared library. To simplify this, there is a script called "run." To run 
+the program "debugger" for example, execute this:
+	$ ./run debugger
+
+

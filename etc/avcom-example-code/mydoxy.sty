@@ -1,0 +1,11 @@
+%\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{mydoxy}[2009/12/29 v1.0.0 csmithmaui's Doxygen style]
+%\RequirePackage[top=1in,left=1in,bottom=1in,right=1in]{geometry}
+% any other custom stuff can go here
+%\usepackage{hyphenat}[0]
+\let\cleardoublepage\clearpage
+\pagenumbering{arabic}
+\usepackage{fullpage}
+\pagestyle{headings}
+\let\ps@plain\ps@fancy
+\endinput

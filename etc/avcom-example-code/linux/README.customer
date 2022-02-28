@@ -1,0 +1,46 @@
+Installation Steps:
+
+First extract and install the libftd2xx1.0.0.tar.gz by following the instructions 
+provided README.dat. You may go to http://www.ftdichip.com/Drivers/D2XX.htm for more 
+details.
+PLEASE NOTE: USB drivers are under development and may not be supported. 
+	Regardless, based on this build of the API's, the drivers may be necessary 
+	in order for the program to compile correctly.
+
+The Avcom shared library files are:
+	- libavcom.so.0
+	- libavcom.so.0.1
+
+The above files must be linked to the build of any program. It may be beneficial to
+add the files to the appropriate /usr/ folder location. 
+
+Make a symbolic link in the appropriate location:
+	$ ln -s libavcom.so.0.1 libavcom.so
+	
+
+The following assumes that the avcom shared libraries are located in the current directory.
+To compile your program, execute:
+
+	$ gcc -Wall -L. example.c -lavcom -lftd2xx -o example
+
+To run the program, be sure to state where the shared library files are (if not 
+already included in your PATH). The below will run the program with the object files
+located in the current directory:
+
+	$ LD_LIBRARY_PATH="." ./example
+
+
+NOTE: The example.c program contains commands only recognizable with Avcom Analyzers that
+contain the Advanced API set. If the Advanced API Option is not present, the analyzer is
+limited to only the following commands:
+	- AVCOM_SA_Connect()
+	- AVCOM_SA_Disconnect()
+	- AVCOM_SA_Deinitialize()
+	- AVCOM_SA_GetHandle()
+	- AVCOM_SA_GetSpectrumData()
+	- AVCOM_SA_Initialize()
+	- AVCOM_SA_LNBstruct()
+	- AVCOM_SA_Register()
+	- AVCOM_SA_SetAllSettings()
+	- AVCOM_SA_Unregister()
+
