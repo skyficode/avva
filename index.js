@@ -5,6 +5,6 @@ module.exports = {
     Simulator: require('./lib/simulator'),
     CSW: require('./lib/csw'),
     Request: require('./lib/request'),
-    Response: require('../lib/response'),
-    Simulator: require('../lib/simulator')
+    Response: require('./lib/response'),
+    Simulator: require('./lib/simulator')
 }
