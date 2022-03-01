@@ -59,7 +59,7 @@ Much of the parsing code is based on another JavaScript library, [keichi/binary-
 * The current "event-based version" in `./src` was designed so it more "unit testable".
   * Most operations happen via [NodeJS's EventEmitter](https://nodejs.org/api/events.html#events), so most code either does `.on(...)` or `.emit(...)`. 
   * But the class organization around the events isn't great (e.g. `Response` and `Request` are poor names for what they do, etc.)
- * 
+* The unit test use a “CSW emulator” to test the parsing logic, but this was also "under-developed"
 
 
 ## Using this source code
