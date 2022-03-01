@@ -1,19 +1,29 @@
 # avva
-#### JavaScript library for communicating with AVCOM's Spectrum Analyzers
+### JavaScript library for communicating with AVCOM's Spectrum Analyzers
 
-*Beware: this library was under-development and maybe incomplete or buggy! This code is shared "as-is" – more example of the parsing `AVCOM CSW Protocol` then a ready-to-use package.*
+*Beware: this library was under-development and maybe incomplete or buggy!  This code is shared "as-is" – more example of the parsing `AVCOM CSW Protocol` then a ready-to-use package.*
 
 The `avva` library communicates with an AVCOM SA using TCP and then can both send command and parse responses, including the spectrum data stream.  `avva` can be included in another project's `package.json`, same as any other node.js package, and used via the exported objects. 
 
- *However an AVCOM SA may only allow one TCP session so this approach has some limitations – specifically you may not be able to use the existing AVCOM tools at the same time as the `avva` library*
+ *Note: an AVCOM SA may only allow one TCP session so this approach has some limitations.  Specifically you may not be able to use the existing AVCOM tools at the same time as the `avva` library*
 
 To provide support for multiple client users of the same spectrum analyser, the library could be extended to allow running as "deamon", and expose **POSSIBLE** **FUTURE** network APIs including:
   * Web server with basic HTML5 UI to emulate the existing SA clients
+  * "CSW passthrough" (e.g. CSW proxy) where `avva` connects to the SA, but AVCOM SA clients connect to `avva`.  Allowing the SA data to be siphoned by `avva` but existing AVCOM client uneffected  
   * REST API for commands such as set FQ, etc.
-  * WebSockets to stream spectrum data to most "modern things", like scientific notebooks including Wolfram, Observerable, or Julia+Pluto which offer rich graphing support.
-  * Send a RTP **multicast** stream using "RTP events" containing the current spectrum data.  *Idea here be that the spectrum data could then be carried (e.g. `mux`) as part of a larger DVB GSE stream from a remote, for QA at a recieving earthstation hub.*
+  * WebSockets to stream spectrum data to most "modern things"
+    * for generally usage in HTML5 "web app" or Java/Python/NodeJS/etc 
+    * scientific notebooks: including Wolfram, Observerable, or Julia+Pluto which offer rich graphing support & facility more rapid usage of the specrium data available
+  * Send a RTP **multicast** stream using "RTP events" containing the current spectrum data.
+    * Here `avva` would just use multicast to spit out its data may be useful, either process/parsed or raw CSW messages. 
+    * Since RTP already has sequencing and timing, the need to encode those into a web sockets is avoided (e.g. a WebSocket etc. API could live on top of a "lower level" multicast API).  
+    * And since timing in important with spectrum data, there is a lot of tooling around RTP.  
+    * As multicast, there is no need to know the server IP, since the SA can be "discovered".
+    * One idea here be that the spectrum data could then be carried as part of a larger DVB GSE stream (e.g. *muxed* with video) from a remote, for QA at a recieving earthstation hub.
+    * Or further extentsion, potentially rasterizing a future HTML-based waveform chart to H.264 video in multicast RTP stream on the network (e.g. so VLC could be a viewer of the SA discoverd via SAP/SDDP/mDNS/IGMP/whatever)
 
-None of these are implemented today.
+None of these are implemented today.  The initially focused on accurate parsing of the CSW than potential other interface/APIs to the data/control.
+
 ## Toolchain
 
 #### `node` 
@@ -35,6 +45,10 @@ AVCOM_PORT=26482
 ## Specifications
 
 The implementation is based on a PDF document provided by AVCOM that documents what they call `CSW Protocol`.  The protocol specs are included in `./etc` for reference here.  Their C/C++ example of CSW is also in the same directly.
+
+The parsing code in `avva` references "TABLE X", those refer to the tables in "CSW Protocol Specification" PDF in `./etc`.
+
+Much of the parsing code is based on another JavaScript library, [keichi/binary-parser](https://github.com/keichi/binary-parser#binary-parser).  Basically it assigns names and data types (endians) based on a stream of data, with some helpers to deal "nesting" for repeative structures and "parsing choices" based on previously obtained tokens.  More basic, it uses "method chaining" to parse serialized data into an object.  Thus, knowledge of `binary-parser`'s API is critical to understanding the code in this project.
 
 ## Using this source code
 
