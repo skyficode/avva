@@ -1,5 +1,5 @@
 # avva
-### JavaScript library for communicating with AVCOM's Spectrum Analyzers
+### JavaScript library for communicating with [AVCOM's Spectrum Analyzers](https://avcomofva.com/embedded/)
 
 *Beware: this library was under-development and maybe incomplete or buggy!  This code is shared "as-is" – more example of the parsing `AVCOM CSW Protocol` then a ready-to-use package.*
 
@@ -14,8 +14,9 @@ To provide support for multiple client users of the same spectrum analyser, the 
   * WebSockets to stream spectrum data to most "modern things"
     * for generally usage in HTML5 "web app" or Java/Python/NodeJS/etc 
     * scientific notebooks: including Wolfram, Observerable, or Julia+Pluto which offer rich graphing support & facility more rapid usage of the specrium data available
-  * Send a RTP **multicast** stream using "RTP events" containing the current spectrum data.
-    * Here `avva` would just use multicast to spit out its data may be useful, either process/parsed or raw CSW messages. 
+  * Send a **RTP-based multicast** stream 
+    * RTP support arbitrary data in a variety ways, generally via MIME type.  So spectrum data could be passed as "event" in RTP stream, or similar to RTP MIDI (see [RFC-4695](https://datatracker.ietf.org/doc/html/rfc4695))
+    * Here `avva` would just use multicast to spit out its data may be useful. Either process/parsed or raw CSW messages could be used, and identified by different custom MIME type in the RTP stream.
     * Since RTP already has sequencing and timing, the need to encode those into a web sockets is avoided (e.g. a WebSocket etc. API could live on top of a "lower level" multicast API).  
     * And since timing in important with spectrum data, there is a lot of tooling around RTP.  
     * As multicast, there is no need to know the server IP, since the SA can be "discovered".
@@ -26,15 +27,17 @@ None of these are implemented today.  The initially focused on accurate parsing 
 
 ## Toolchain
 
-#### `node` 
-
+#### `node` for runtime
 Any recent version should work.  This was developed using NodeJS v12 to v16 releases however.
 
-#### `yarn`
-This packages uses `yarn` for NodeJS packages.  Although, `npm` likely works.  
+#### `yarn` for package/build
+This packages uses [`yarn`](https://yarnpkg.com/getting-started) for NodeJS packages, starting with `yarn install` to get external libraries.  Although, `npm` likely works too.  
+
+#### `mocha` and `chai` for unit tests and asserations
+Using [`mocha`](https://mochajs.org/#getting-started) in the src root will run the unit tests in `./test`.  [`chai`](https://www.chaijs.com) is used for assertion testing.
 
 #### Environment Variables 
-The dotenv package is used to load the needed AVCOM SA IP and port from environment variables or a `.env` file located in the root of the source code.  _The unit test need the .env set to `localhost` since the launch an poor-man's AVCOM simulator._
+The [dotenv](https://github.com/motdotla/dotenv#usage) package is used to load the needed AVCOM SA IP and port from environment variables or a `.env` file located in the root of the source code.  _The unit test need the .env set to `localhost` since the launch an poor-man's AVCOM simulator._
 
 These environment variables are used:
 ```
@@ -42,13 +45,22 @@ AVCOM_IP=localhost
 AVCOM_PORT=26482
 ```
 
-## Specifications
+## CSW Protocol *and parsing*
 
 The implementation is based on a PDF document provided by AVCOM that documents what they call `CSW Protocol`.  The protocol specs are included in `./etc` for reference here.  Their C/C++ example of CSW is also in the same directly.
 
 The parsing code in `avva` references "TABLE X", those refer to the tables in "CSW Protocol Specification" PDF in `./etc`.
 
 Much of the parsing code is based on another JavaScript library, [keichi/binary-parser](https://github.com/keichi/binary-parser#binary-parser).  Basically it assigns names and data types (endians) based on a stream of data, with some helpers to deal "nesting" for repeative structures and "parsing choices" based on previously obtained tokens.  More basic, it uses "method chaining" to parse serialized data into an object.  Thus, knowledge of `binary-parser`'s API is critical to understanding the code in this project.
+
+## Notes on Code Design
+
+* The "first version" was a flat file that I used to test communicating with AVCOM and parsing CSW, available in the repo at [`./etc/old-prototype-tests.js`](https://github.com/skyficode/avva/blob/main/etc/old-prototype-tests.js) – may be a good starting point before trying to understand the event-based architecture.
+* The current "event-based version" in `./src` was designed so it more "unit testable".
+  * Most operations happen via [NodeJS's EventEmitter](https://nodejs.org/api/events.html#events), so most code either does `.on(...)` or `.emit(...)`. 
+  * But the class organization around the events isn't great (e.g. `Response` and `Request` are poor names for what they do, etc.)
+ * 
+
 
 ## Using this source code
 
